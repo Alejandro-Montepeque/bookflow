@@ -36,6 +36,12 @@ const showingNavigationDropdown = ref(false);
                             >
                                 Services
                             </NavLink>
+                            <NavLink
+                                :href="route('bookings.index')"
+                                :active="route().current('bookings.*')"
+                            >
+                                Bookings
+                            </NavLink>
                         </div>
                     </div>
 
@@ -138,6 +144,12 @@ const showingNavigationDropdown = ref(false);
                         :active="route().current('services.*')"
                     >
                         Services
+                    </ResponsiveNavLink>
+                    <ResponsiveNavLink
+                        :href="route('bookings.index')"
+                        :active="route().current('bookings.*')"
+                    >
+                        Bookings
                     </ResponsiveNavLink>
                 </div>
 

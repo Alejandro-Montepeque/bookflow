@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AvailabilityRuleController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\ServiceController;
@@ -27,6 +28,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Availability rules: a single endpoint replaces the entire set for a service.
     Route::put('services/{service}/availability', [AvailabilityRuleController::class, 'sync'])
         ->name('services.availability.sync');
+
+    // Bookings management (provider side).
+    Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::patch('bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+    Route::patch('bookings/{booking}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
 });
 
 Route::middleware('auth')->group(function () {
