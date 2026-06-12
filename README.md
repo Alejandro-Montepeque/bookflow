@@ -1,58 +1,124 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BookFlow
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> Effortless bookings for service businesses — a Calendly alternative built with Laravel 13, Inertia.js and Vue 3.
 
-## About Laravel
+[![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?logo=php)](https://www.php.net/)
+[![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js)](https://vuejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)](https://www.postgresql.org/)
+[![Pest](https://img.shields.io/badge/Tests-Pest_4-FF6E6E)](https://pestphp.com/)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## What it does
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+BookFlow lets a service provider publish bookable services (consultations, classes,
+sessions), set recurring weekly availability, and accept paid bookings via Stripe
+Checkout. Customers can book without creating an account — they get a unique cancel
+link by email.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Stack
 
-## Learning Laravel
+| Layer | Technology |
+|---|---|
+| **Backend** | Laravel 13 (PHP 8.3+) |
+| **Frontend** | Inertia.js 2 + Vue 3 + TypeScript + Tailwind CSS |
+| **Database** | PostgreSQL 18 |
+| **Cache / Queue** | Redis |
+| **Auth** | Laravel Breeze (sessions, email verification, password reset) |
+| **Payments** | Stripe Checkout (PaymentIntent + webhooks) |
+| **Mail (dev)** | Mailpit |
+| **Mail (prod)** | Resend |
+| **Testing** | Pest 4 + pest-plugin-laravel |
+| **Dev env** | Laravel Sail (Docker Compose) |
+| **Deploy target** | Railway (Laravel app + Postgres managed) |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Quick start
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) and
+PHP/Composer to bootstrap.
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone
+git clone git@github.com:Alejandro-Montepeque/bookflow.git
+cd bookflow
 
-php artisan boost:install
+# 2. Install PHP deps (needs PHP 8.3+ locally to install Sail)
+composer install
+
+# 3. Copy env template and generate app key
+cp .env.example .env
+php artisan key:generate
+
+# 4. Bring the stack up (Postgres, Redis, Mailpit, Laravel)
+./vendor/bin/sail up -d
+
+# 5. Install JS deps
+./vendor/bin/sail npm install
+
+# 6. Run migrations and seed demo data
+./vendor/bin/sail artisan migrate:fresh --seed
+
+# 7. Start Vite for HMR (in a second terminal)
+./vendor/bin/sail npm run dev
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Then open:
 
-## Contributing
+- **App** → http://localhost:8080
+- **Mailpit** (outgoing emails) → http://localhost:8025
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The seeder creates a demo provider you can log in with right away:
 
-## Code of Conduct
+| Email | Password |
+|---|---|
+| `demo@bookflow.app` | `password` |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Running tests
 
-## Security Vulnerabilities
+```bash
+./vendor/bin/sail artisan test
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The suite covers Breeze auth flows plus model relationships, scopes and business
+rules across `Service`, `AvailabilityRule`, `Booking` and `Payment`.
+
+## Project structure
+
+```
+app/
+├── Http/Controllers/       Inertia controllers
+├── Models/                 Eloquent models (Service, Booking, Payment, AvailabilityRule)
+└── ...
+database/
+├── migrations/             Schema (services, availability_rules, bookings, payments)
+├── factories/              Faker definitions for tests/seeds
+└── seeders/                DatabaseSeeder is idempotent (safe to re-run)
+resources/
+├── js/
+│   ├── Pages/              Inertia pages (1 .vue per route)
+│   ├── Components/         Reusable Vue components
+│   ├── Layouts/            AuthenticatedLayout, GuestLayout
+│   ├── types/              TypeScript domain types
+│   └── utils/              Format helpers (price, date, status)
+└── css/app.css             Tailwind entrypoint
+routes/web.php              All routes — Inertia handles the rest
+tests/Feature/Models/       Pest tests for the domain
+compose.yaml                Docker Compose (Sail) services
+```
+
+## Roadmap
+
+- [x] Authentication scaffold (Breeze, Vue + TS + Pest)
+- [x] Domain models (Service, AvailabilityRule, Booking, Payment)
+- [x] Docker dev environment (Sail with Postgres, Redis, Mailpit)
+- [ ] Provider dashboard with stats
+- [ ] CRUD for services + availability editor
+- [ ] Public booking page with slot picker
+- [ ] Stripe Checkout integration + webhook
+- [ ] Booking confirmation / cancellation emails
+- [ ] Deploy to Railway
+- [ ] CI on GitHub Actions
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
