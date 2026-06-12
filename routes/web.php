@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AvailabilityRuleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -33,5 +34,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Public booking flow — anyone with the URL can book; no authentication required.
+Route::get('/u/{user}/{service}', [PublicBookingController::class, 'show'])
+    ->name('public.booking.show');
+Route::post('/u/{user}/{service}', [PublicBookingController::class, 'store'])
+    ->name('public.booking.store');
+Route::get('/booking/{token}', [PublicBookingController::class, 'confirmation'])
+    ->name('public.booking.confirmation');
 
 require __DIR__.'/auth.php';

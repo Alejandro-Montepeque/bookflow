@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import type { Service } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
+import type { PageProps, Service } from '@/types';
 import { formatDuration, formatPrice } from '@/utils/format';
 
 interface ServiceWithCounts extends Service {
@@ -16,8 +16,12 @@ const emit = defineEmits<{
     (e: 'request-delete', service: ServiceWithCounts): void;
 }>();
 
+const page = usePage<PageProps>();
+
 function copyPublicUrl(): void {
-    const url = `${window.location.origin}/u/_/s/${props.service.slug}`;
+    const userSlug = page.props.auth.user?.slug;
+    if (!userSlug) return;
+    const url = `${window.location.origin}/u/${userSlug}/${props.service.slug}`;
     void navigator.clipboard.writeText(url);
 }
 </script>

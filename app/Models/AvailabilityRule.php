@@ -30,8 +30,8 @@ class AvailabilityRule extends Model
     {
         return [
             'day_of_week' => 'integer',
-            'start_time' => 'datetime:H:i',
-            'end_time' => 'datetime:H:i',
+            // start_time / end_time stay as raw 'HH:MM' or 'HH:MM:SS' strings — the TIME
+            // column doesn't include a date, so casting to datetime causes ambiguity.
         ];
     }
 
