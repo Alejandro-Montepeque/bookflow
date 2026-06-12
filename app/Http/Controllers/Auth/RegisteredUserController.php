@@ -31,16 +31,21 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Timezone is optional and validated against PHP's known list; default to UTC.
+        $validTimezones = \DateTimeZone::listIdentifiers();
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'timezone' => ['sometimes', 'string', 'in:'.implode(',', $validTimezones)],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'timezone' => $request->input('timezone', 'UTC'),
         ]);
 
         event(new Registered($user));
