@@ -22,7 +22,9 @@ it('preserves a custom slug if provided', function () {
 });
 
 it('falls back to "user" when the name has no slug-able characters', function () {
-    $user = User::factory()->create(['name' => '!@#$', 'slug' => null]);
+    // "..." has no slug-able characters once stripped — Str::slug returns ''.
+    // The model's booted hook then falls back to the generic "user" base.
+    $user = User::factory()->create(['name' => '...', 'slug' => null]);
 
     expect($user->slug)->toBe('user');
 });

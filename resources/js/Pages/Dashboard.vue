@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import type { PageProps } from '@/types';
 import { computed, ref } from 'vue';
 
@@ -145,8 +145,8 @@ const toneRing: Record<StatCard['tone'], string> = {
                         Quick actions
                     </h3>
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <a
-                            href="#"
+                        <Link
+                            :href="route('services.create')"
                             class="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-indigo-700"
                         >
                             <div class="grid size-11 shrink-0 place-items-center rounded-lg bg-indigo-500/10 text-indigo-600 ring-1 ring-indigo-500/20 dark:bg-indigo-400/10 dark:text-indigo-300">
@@ -161,26 +161,26 @@ const toneRing: Record<StatCard['tone'], string> = {
                             <svg class="size-5 text-gray-400 transition group-hover:translate-x-1 group-hover:text-gray-600 dark:group-hover:text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 5l7 7-7 7" />
                             </svg>
-                        </a>
+                        </Link>
 
-                        <a
-                            href="#"
+                        <Link
+                            :href="route('services.index')"
                             class="group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-700"
                         >
                             <div class="grid size-11 shrink-0 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:bg-emerald-400/10 dark:text-emerald-300">
                                 <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="5" width="18" height="16" rx="2" />
-                                    <path d="M3 9h18M8 3v4M16 3v4" />
+                                    <rect x="3" y="7" width="18" height="13" rx="2" />
+                                    <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M3 13h18" />
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <p class="font-semibold text-gray-900 dark:text-gray-100">View bookings</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Upcoming and past appointments</p>
+                                <p class="font-semibold text-gray-900 dark:text-gray-100">Manage services</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Edit, deactivate, or remove existing services</p>
                             </div>
                             <svg class="size-5 text-gray-400 transition group-hover:translate-x-1 group-hover:text-gray-600 dark:group-hover:text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 5l7 7-7 7" />
                             </svg>
-                        </a>
+                        </Link>
                     </div>
                 </section>
 

@@ -14,16 +14,13 @@ class HandleInertiaRequests extends Middleware
      */
     protected $rootView = 'app';
 
-    /**
-     * Determine the current asset version.
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
     /**
-     * Define the props that are shared by default.
+     * Props shared with every Inertia response.
      *
      * @return array<string, mixed>
      */
@@ -33,6 +30,12 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+            ],
+            // Flash messages set with `->with('success'|'error', ...)` are exposed
+            // as `$page.props.flash.{success,error}` to the frontend.
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
             ],
         ];
     }
