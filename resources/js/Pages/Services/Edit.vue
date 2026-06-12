@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import AvailabilityEditor from '@/Components/AvailabilityEditor.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import type { Service } from '@/types';
+import type { AvailabilityRule, PageProps, Service } from '@/types';
+
+interface ServiceWithRules extends Service {
+    availability_rules: AvailabilityRule[];
+}
 
 const COLOR_SWATCHES = [
     '#6366f1', '#10b981', '#f59e0b', '#ec4899',
@@ -18,8 +23,11 @@ const SUPPORTED_CURRENCIES = ['USD', 'EUR', 'GBP', 'MXN', 'COP', 'ARS'] as const
 type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 
 const props = defineProps<{
-    service: Service;
+    service: ServiceWithRules;
 }>();
+
+const page = usePage<PageProps>();
+const flashSuccess = computed(() => page.props.flash?.success);
 
 const form = useForm({
     name: props.service.name,
@@ -72,6 +80,18 @@ function submit(): void {
         </template>
 
         <div class="py-8">
+            <div class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
+                <div
+                    v-if="flashSuccess"
+                    class="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300"
+                >
+                    <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    {{ flashSuccess }}
+                </div>
+            </div>
+
             <form @submit.prevent="submit" class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
                 <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
                     <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">
@@ -218,6 +238,14 @@ function submit(): void {
                     </PrimaryButton>
                 </div>
             </form>
+
+            <!-- Availability editor lives below the service form so the layout stays linear. -->
+            <div class="mx-auto mt-6 max-w-3xl px-4 sm:px-6 lg:px-8">
+                <AvailabilityEditor
+                    :service-id="service.id"
+                    :initial-rules="service.availability_rules ?? []"
+                />
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>

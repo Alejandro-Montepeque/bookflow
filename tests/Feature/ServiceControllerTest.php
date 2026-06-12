@@ -38,7 +38,7 @@ it('renders the create page for authenticated users', function () {
         ->assertInertia(fn ($page) => $page->component('Services/Create'));
 });
 
-it('stores a new service with valid data', function () {
+it('stores a new service and redirects to its edit page', function () {
     $payload = [
         'name' => '45-min Strategy Session',
         'description' => 'Deep dive into your roadmap.',
@@ -50,15 +50,17 @@ it('stores a new service with valid data', function () {
         'is_active' => true,
     ];
 
-    $this->actingAs($this->user)
-        ->post('/services', $payload)
-        ->assertRedirect('/services');
+    $response = $this->actingAs($this->user)
+        ->post('/services', $payload);
 
     $this->assertDatabaseHas('services', [
         'user_id' => $this->user->id,
         'name' => '45-min Strategy Session',
         'price_cents' => 7500,
     ]);
+
+    $service = Service::where('user_id', $this->user->id)->latest('id')->first();
+    $response->assertRedirect("/services/{$service->id}/edit");
 });
 
 it('rejects a service with invalid color format', function () {

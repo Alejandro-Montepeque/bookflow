@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AvailabilityRuleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Service CRUD — controller methods handle authorization via policy.
     Route::resource('services', ServiceController::class)
         ->except(['show']);
+
+    // Availability rules: a single endpoint replaces the entire set for a service.
+    Route::put('services/{service}/availability', [AvailabilityRuleController::class, 'sync'])
+        ->name('services.availability.sync');
 });
 
 Route::middleware('auth')->group(function () {

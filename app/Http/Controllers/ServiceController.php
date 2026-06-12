@@ -35,10 +35,12 @@ class ServiceController extends Controller
 
     public function store(StoreServiceRequest $request): RedirectResponse
     {
-        auth()->user()->services()->create($request->validated());
+        $service = auth()->user()->services()->create($request->validated());
 
-        return redirect()->route('services.index')
-            ->with('success', 'Service created.');
+        // Send the provider straight to Edit so they can configure availability rules
+        // before sharing the public link.
+        return redirect()->route('services.edit', $service->id)
+            ->with('success', 'Service created. Now set your availability.');
     }
 
     public function edit(Service $service): Response
@@ -46,7 +48,7 @@ class ServiceController extends Controller
         Gate::authorize('update', $service);
 
         return Inertia::render('Services/Edit', [
-            'service' => $service,
+            'service' => $service->load('availabilityRules'),
         ]);
     }
 
