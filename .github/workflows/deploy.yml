@@ -155,7 +155,7 @@ jobs:
             --min-instances=0 \
             --max-instances=5 \
             --timeout=60 \
-            --set-secrets=APP_KEY=app-key:latest,DATABASE_URL=database-url:latest \
+            --set-secrets=APP_KEY=app-key:latest,DB_URL=database-url:latest \
             --set-env-vars="APP_NAME=BookFlow,APP_ENV=production,APP_DEBUG=false,APP_URL=${{ secrets.APP_URL }},LOG_CHANNEL=stderr,LOG_LEVEL=info,DB_CONNECTION=pgsql,SESSION_DRIVER=database,SESSION_SECURE_COOKIE=true,CACHE_STORE=database,QUEUE_CONNECTION=database,MAIL_MAILER=log,MAIL_FROM_ADDRESS=no-reply@bookflow.app,MAIL_FROM_NAME=BookFlow"
 
       - name: Show service URL
