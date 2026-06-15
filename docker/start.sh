@@ -19,6 +19,9 @@ echo ">> Running migrations…"
 # min-instances=0 and Laravel's migration tracker is idempotent enough.
 php artisan migrate --force
 
+echo ">> Seeding demo data…"
+php artisan db:seed --force || echo "Warning: seed failed (continuing)"
+
 echo ">> Caching config, routes and views…"
 php artisan config:cache
 php artisan route:cache
