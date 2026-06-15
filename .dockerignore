@@ -1,0 +1,39 @@
+# --- Local environment ---
+.env
+.env.*
+!.env.example
+
+# --- Dependencies / build artifacts (rebuilt inside Docker) ---
+node_modules
+vendor
+public/build
+public/hot
+
+# --- Tooling / local state ---
+.git
+.github
+.idea
+.vscode
+.phpunit.cache
+.phpunit.result.cache
+storage/logs/*.log
+storage/framework/cache/data
+storage/framework/sessions
+storage/framework/views
+storage/app/public
+bootstrap/cache/*.php
+
+# --- Local DB ---
+database/database.sqlite
+
+# --- Sail / docker dev ---
+compose.yaml
+
+# --- Misc ---
+*.md
+!README.md
+.DS_Store
+npm-debug.log
+yarn-error.log
+coverage
+tests

@@ -38,13 +38,11 @@ const updatePassword = () => {
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Update Password
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Update password
             </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                Ensure your account is using a long, random password to stay
-                secure.
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Use a long, unique password to keep your account secure.
             </p>
         </header>
 
@@ -113,7 +111,7 @@ const updatePassword = () => {
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
+                        class="text-sm text-emerald-600 dark:text-emerald-400"
                     >
                         Saved.
                     </p>

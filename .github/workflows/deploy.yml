@@ -1,0 +1,145 @@
+name: CI + Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  SERVICE: bookflow-app
+  REPO: bookflow
+  IMAGE_NAME: app
+
+jobs:
+  # ----------------------------------------------------------------
+  # 1. Run the test suite against a real Postgres 18.
+  # ----------------------------------------------------------------
+  test:
+    name: Pest tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: bookflow
+          POSTGRES_PASSWORD: bookflow
+          POSTGRES_DB: bookflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U bookflow"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_DATABASE: bookflow_test
+      DB_USERNAME: bookflow
+      DB_PASSWORD: bookflow
+      APP_ENV: testing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql, mbstring, intl, bcmath, zip
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install PHP deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate APP_KEY
+        run: php artisan key:generate --ansi
+
+      - name: Run Pest
+        run: php artisan test
+
+  # ----------------------------------------------------------------
+  # 2. Build the image and deploy to Cloud Run (main branch only).
+  # ----------------------------------------------------------------
+  deploy:
+    name: Deploy to Cloud Run
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Ensure Artifact Registry repo exists
+        run: |
+          gcloud artifacts repositories describe $REPO \
+            --location=$REGION --project=$PROJECT_ID 2>/dev/null || \
+          gcloud artifacts repositories create $REPO \
+            --repository-format=docker \
+            --location=$REGION \
+            --project=$PROJECT_ID
+
+      - name: Build and push image
+        run: |
+          IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME
+          docker build \
+            -t $IMAGE:${{ github.sha }} \
+            -t $IMAGE:latest \
+            .
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:${{ github.sha }}
+          gcloud run deploy $SERVICE \
+            --image=$IMAGE \
+            --region=$REGION \
+            --project=$PROJECT_ID \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --memory=512Mi \
+            --cpu=1 \
+            --min-instances=0 \
+            --max-instances=5 \
+            --timeout=60 \
+            --set-secrets=APP_KEY=app-key:latest,DATABASE_URL=database-url:latest \
+            --set-env-vars="APP_NAME=BookFlow,APP_ENV=production,APP_DEBUG=false,APP_URL=${{ secrets.APP_URL }},LOG_CHANNEL=stderr,LOG_LEVEL=info,DB_CONNECTION=pgsql,SESSION_DRIVER=database,SESSION_SECURE_COOKIE=true,CACHE_STORE=database,QUEUE_CONNECTION=database,MAIL_MAILER=log,MAIL_FROM_ADDRESS=no-reply@bookflow.app,MAIL_FROM_NAME=BookFlow"
+
+      - name: Show service URL
+        run: |
+          gcloud run services describe $SERVICE \
+            --region=$REGION \
+            --project=$PROJECT_ID \
+            --format='value(status.url)'

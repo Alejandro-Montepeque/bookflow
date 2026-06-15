@@ -12,40 +12,32 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Profile" />
+    <Head title="Profile — BookFlow" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
+            <h2 class="text-xl font-semibold leading-tight text-gray-900 dark:text-gray-100">
                 Profile
             </h2>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
+        <div class="py-10">
+            <div class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
+                <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
                         class="max-w-xl"
                     />
-                </div>
+                </section>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
+                <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
                     <UpdatePasswordForm class="max-w-xl" />
-                </div>
+                </section>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
+                <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
                     <DeleteUserForm class="max-w-xl" />
-                </div>
+                </section>
             </div>
         </div>
     </AuthenticatedLayout>

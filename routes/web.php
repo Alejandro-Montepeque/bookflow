@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AvailabilityRuleController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\ServiceController;
@@ -15,9 +16,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // All authenticated provider-facing routes.
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -42,11 +43,23 @@ Route::middleware('auth')->group(function () {
 });
 
 // Public booking flow — anyone with the URL can book; no authentication required.
-Route::get('/u/{user}/{service}', [PublicBookingController::class, 'show'])
-    ->name('public.booking.show');
-Route::post('/u/{user}/{service}', [PublicBookingController::class, 'store'])
-    ->name('public.booking.store');
-Route::get('/booking/{token}', [PublicBookingController::class, 'confirmation'])
-    ->name('public.booking.confirmation');
+// Rate-limited to discourage abuse: 30 reads/min and 10 writes/min per IP.
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/u/{user}', [PublicBookingController::class, 'profile'])
+        ->name('public.profile');
+    Route::get('/u/{user}/{service}', [PublicBookingController::class, 'show'])
+        ->name('public.booking.show');
+    Route::get('/booking/{token}', [PublicBookingController::class, 'confirmation'])
+        ->name('public.booking.confirmation');
+    Route::get('/cancel/{token}', [PublicBookingController::class, 'cancelShow'])
+        ->name('public.booking.cancel.show');
+});
+
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/u/{user}/{service}', [PublicBookingController::class, 'store'])
+        ->name('public.booking.store');
+    Route::post('/cancel/{token}', [PublicBookingController::class, 'cancelStore'])
+        ->name('public.booking.cancel.store');
+});
 
 require __DIR__.'/auth.php';

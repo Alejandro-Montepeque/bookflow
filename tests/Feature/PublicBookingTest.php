@@ -58,6 +58,27 @@ it('returns 404 for an inactive service', function () {
 });
 
 // ---------------------------------------------------------------------------
+// Provider profile directory
+// ---------------------------------------------------------------------------
+
+it('lists active services on the provider profile page', function () {
+    Service::factory(2)->for($this->provider)->create();
+    Service::factory()->for($this->provider)->inactive()->create();
+
+    $this->get('/u/alejandro-test')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Public/ProviderProfile')
+            ->where('provider.name', 'Alejandro Test')
+            ->has('services', 3) // 1 from beforeEach (active) + 2 new active. Inactive excluded.
+        );
+});
+
+it('returns 404 for an unknown provider profile', function () {
+    $this->get('/u/does-not-exist')->assertNotFound();
+});
+
+// ---------------------------------------------------------------------------
 // Slot generation (via the SlotGenerator)
 // ---------------------------------------------------------------------------
 
