@@ -56,6 +56,21 @@ jobs:
       - name: Install PHP deps
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node deps
+        run: npm ci
+
+      - name: Build frontend assets (Vite)
+        # Inertia tests that assert page renders need the Vite manifest to exist
+        # at public/build/manifest.json. Without this, @vite() in the Blade root
+        # view fails before Inertia can respond.
+        run: npm run build
+
       - name: Prepare .env for CI
         run: |
           cp .env.example .env
