@@ -13,7 +13,7 @@ interface DashboardStats {
     month_label: string;
 }
 
-interface NextBooking extends Booking {
+interface NextBooking extends Omit<Booking, 'service' | 'payment'> {
     service?: Pick<Service, 'id' | 'name' | 'color' | 'duration_minutes'>;
     payment?: Pick<Payment, 'id' | 'status' | 'amount_cents' | 'currency'> | null;
 }

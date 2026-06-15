@@ -8,7 +8,7 @@ import type { Booking, PageProps, Payment, Service } from '@/types';
 
 type Tab = 'upcoming' | 'past' | 'cancelled';
 
-interface BookingWithService extends Booking {
+interface BookingWithService extends Omit<Booking, 'service' | 'payment'> {
     service?: Pick<Service, 'id' | 'name' | 'color' | 'duration_minutes'>;
     payment?: Pick<Payment, 'id' | 'status' | 'amount_cents' | 'currency'> | null;
 }
