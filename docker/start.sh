@@ -13,8 +13,11 @@ mkdir -p /run/nginx storage/framework/{sessions,views,cache} storage/logs
 chown -R www-data:www-data storage bootstrap/cache /run/nginx
 
 echo ">> Running migrations…"
-# --isolated uses a DB lock so concurrent Cloud Run instances don't race.
-php artisan migrate --force --isolated
+# Note: we don't use --isolated here. It would require the `cache_locks` table
+# to take a lock, but that table is itself created by one of the migrations
+# we're about to run. Concurrent migrations are very unlikely with Cloud Run
+# min-instances=0 and Laravel's migration tracker is idempotent enough.
+php artisan migrate --force
 
 echo ">> Caching config, routes and views…"
 php artisan config:cache
