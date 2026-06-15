@@ -16,34 +16,25 @@ env:
 
 jobs:
   # ----------------------------------------------------------------
-  # 1. Run the test suite against a real Postgres 18.
+  # 1. Run the test suite against a real Postgres 17.
   # ----------------------------------------------------------------
   test:
     name: Pest tests
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:18-alpine
+        image: postgres:17-alpine
         env:
-          POSTGRES_USER: bookflow
-          POSTGRES_PASSWORD: bookflow
-          POSTGRES_DB: bookflow_test
+          POSTGRES_USER: sail
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testing
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U bookflow"
+          --health-cmd="pg_isready -U sail"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
-
-    env:
-      DB_CONNECTION: pgsql
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_DATABASE: bookflow_test
-      DB_USERNAME: bookflow
-      DB_PASSWORD: bookflow
-      APP_ENV: testing
 
     steps:
       - uses: actions/checkout@v4
@@ -65,11 +56,26 @@ jobs:
       - name: Install PHP deps
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Copy .env
-        run: cp .env.example .env
+      - name: Prepare .env for CI
+        run: |
+          cp .env.example .env
+          sed -i 's|^DB_CONNECTION=.*|DB_CONNECTION=pgsql|' .env
+          sed -i 's|^DB_HOST=.*|DB_HOST=localhost|' .env
+          sed -i 's|^DB_PORT=.*|DB_PORT=5432|' .env
+          sed -i 's|^DB_DATABASE=.*|DB_DATABASE=testing|' .env
+          sed -i 's|^DB_USERNAME=.*|DB_USERNAME=sail|' .env
+          sed -i 's|^DB_PASSWORD=.*|DB_PASSWORD=password|' .env
 
       - name: Generate APP_KEY
         run: php artisan key:generate --ansi
+
+      - name: Wait for Postgres to be ready
+        run: |
+          for i in {1..15}; do
+            if pg_isready -h localhost -U sail; then echo "Postgres ready"; exit 0; fi
+            echo "Waiting for Postgres ($i/15)…"; sleep 2
+          done
+          echo "Postgres did not become ready in time"; exit 1
 
       - name: Run Pest
         run: php artisan test
